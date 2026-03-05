@@ -1,6 +1,6 @@
 {
   "name": "study-spot-check",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "研究生错题库高效点检系统",
   "author": "Antigravity",
   "repository": {
@@ -16,7 +16,8 @@
   },
   "build": {
     "appId": "com.gravity.spotcheck",
-    "productName": "错题库点检系统",
+    "productName": "StudySpotCheck",
+    "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
     "directories": {
       "output": "dist"
     },
@@ -38,7 +39,6 @@
   },
   "devDependencies": {
     "electron": "^30.0.0",
-    "electron-builder": "^24.13.3",
-    "@electron/rebuild": "^3.6.0"
+    "electron-builder": "^24.13.3"
   }
 }
