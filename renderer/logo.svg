@@ -1,0 +1,13 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Rounded face -->
+  <path d="M32,45 C32,32 40,25 50,25 C60,25 68,32 68,45 L68,70 C68,82 60,88 50,88 C40,88 32,82 32,70 Z" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Anime-style boy hair (messy/peaked) -->
+  <path d="M28,48 L32,25 L45,35 L55,25 L65,35 L72,25 L72,48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Bangs -->
+  <path d="M32,45 Q40,40 50,42 Q60,40 68,45" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+  <!-- Minimalist eyes (blinking/smiling) -->
+  <path d="M40,65 Q44,62 48,65" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M52,65 Q56,62 60,65" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Small smile -->
+  <path d="M46,78 Q50,82 54,78" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+</svg>

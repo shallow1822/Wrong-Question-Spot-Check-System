@@ -1,13 +1,57 @@
 :root {
-    --primary: #8b5cf6;
-    --secondary: #d946ef;
-    --bg-dark: #0f172a;
-    --sidebar-bg: rgba(30, 41, 59, 0.7);
-    --glass-bg: rgba(255, 255, 255, 0.05);
-    --text: #f8fafc;
-    --text-muted: #94a3b8;
+    /* 夜间模式 (温和黑 - Default) */
+    --primary: #d4a373;
+    /* 暖茶色 */
+    --secondary: #a2d2ff;
+    /* 清冷蓝 */
+    --bg-main: #1c1c1e;
+    --sidebar-bg: rgba(44, 44, 46, 0.8);
+    --card-bg: rgba(58, 58, 60, 0.5);
+    --mute-bg: rgba(255, 255, 255, 0.05);
+    --progress-bg: rgba(255, 255, 255, 0.1);
+    --text: #d1d1d6;
+    --text-muted: #8e8e93;
     --sidebar-width: 260px;
     --sidebar-collapsed-width: 80px;
+    --radius: 32px;
+    --shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+    --accent-soft: #ccd5ae;
+    /* 豆沙绿 */
+
+    /* 学科颜色 - 夜间 */
+    --subj-cs: #d4a373;
+    --subj-comp: #94a3b8;
+    --subj-os: #a2d2ff;
+    --subj-net: #ccd5ae;
+    --subj-math: #e9edc9;
+    --subj-linear: #faedcd;
+    --subj-eng: #d4a373;
+    --subj-pol: #ff6b6b;
+    --subj-other: #8e8e93;
+}
+
+body.light-theme {
+    /* 日间模式 (温和白/乳白) */
+    --bg-main: #f9f8f3;
+    /* 温暖米白，不刺眼 */
+    --sidebar-bg: rgba(244, 242, 235, 0.9);
+    --card-bg: #fffefe;
+    --mute-bg: rgba(0, 0, 0, 0.04);
+    --progress-bg: rgba(0, 0, 0, 0.08);
+    --text: #3a3a3c;
+    --text-muted: #4a4a4e;
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+
+    /* 学科颜色 - 日间 */
+    --subj-cs: #8b5e34;
+    --subj-comp: #475569;
+    --subj-os: #2563eb;
+    --subj-net: #4d7c0f;
+    --subj-math: #71710a;
+    --subj-linear: #92400e;
+    --subj-eng: #8b5e34;
+    --subj-pol: #dc2626;
+    --subj-other: #4b5563;
 }
 
 * {
@@ -17,11 +61,34 @@
 }
 
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background-color: var(--bg-dark);
+    font-family: 'Outfit', 'Inter', -apple-system, sans-serif;
+    background-color: var(--bg-main);
     color: var(--text);
     height: 100vh;
     overflow: hidden;
+    transition: background-color 0.4s ease, color 0.4s ease;
+}
+
+.logo {
+    margin-bottom: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.logo:hover {
+    transform: scale(1.05);
+}
+
+.logo svg {
+    width: 120px;
+    /* 人物放大 2 倍 */
+    height: 120px;
+    color: var(--text);
+    /* 自动跟随主题颜色 */
+    transition: color 0.4s ease;
 }
 
 #app {
@@ -48,7 +115,7 @@ body {
 }
 
 .logo {
-    font-size: 1.25rem;
+    font-size: 2rem;
     font-weight: 900;
     background: linear-gradient(to right, var(--primary), var(--secondary));
     -webkit-background-clip: text;
@@ -107,13 +174,15 @@ nav {
 
 .nav-item:hover,
 .nav-item.active {
-    background: var(--glass-bg);
+    background: var(--card-bg);
     color: var(--text);
 }
 
 .nav-item.active {
-    background: rgba(139, 92, 246, 0.15);
-    box-shadow: inset 0 0 0 1px rgba(139, 92, 246, 0.3);
+    background: var(--primary);
+    /* 使用茶色/蓝色，非紫色 */
+    color: white;
+    box-shadow: 0 4px 15px rgba(212, 163, 115, 0.2);
 }
 
 /* --- 主内容区 --- */
@@ -123,32 +192,69 @@ nav {
     flex-direction: column;
     height: 100vh;
     overflow: hidden;
+    position: relative;
 }
 
 .top-bar {
-    height: 80px;
+    height: 100px;
     padding: 0 40px;
     display: flex;
     align-items: center;
+    justify-content: center;
+    /* 居中标题 */
+    position: relative;
+}
+
+.top-bar h1 {
+    font-size: 2.5rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 5px 15px rgba(212, 163, 115, 0.1));
+    letter-spacing: -1px;
+}
+
+/* 主题切换按钮 */
+#theme-toggle {
+    position: fixed;
+    left: 20px;
+    bottom: 20px;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: var(--card-bg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.2rem;
+    box-shadow: var(--shadow);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 1000;
+}
+
+#theme-toggle:hover {
+    transform: scale(1.1) rotate(15deg);
 }
 
 .view-container {
     flex: 1;
-    padding: 40px 60px;
-    /* 增加全局呼吸感 */
+    padding: 20px 60px 40px;
+    /* 顶部间距缩小，因为标题移上去了 */
     overflow-y: auto;
 }
 
 /* --- 通用卡片与表单 --- */
 .glass-card {
-    background: var(--glass-bg);
+    background: var(--card-bg);
     backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 24px;
+    border-radius: var(--radius);
     padding: 40px;
-    /* 内部间距微增 */
     margin-bottom: 30px;
-    /* 增加组件间空隙 */
+    box-shadow: var(--shadow);
 }
 
 .form-grid {
@@ -206,10 +312,10 @@ nav {
 .select-wrapper select,
 .form-group select,
 select.custom-select {
-    background-color: #1e293b !important;
+    background-color: var(--card-bg) !important;
     background-image: none !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    border-radius: 12px !important;
+    border-radius: 16px !important;
     padding: 12px 18px !important;
     color: var(--text) !important;
     font-size: 0.95rem !important;
@@ -222,23 +328,23 @@ select.custom-select {
     padding-right: 40px !important;
 }
 
-/* 专门处理 option 的背景色，防止白屏 */
+/* 专门处理 option 的背景色 */
 select option {
-    background-color: #0f172a !important;
-    color: #f8fafc !important;
+    background-color: var(--bg-main) !important;
+    color: var(--text) !important;
 }
 
 .select-wrapper select:focus {
     border-color: var(--primary) !important;
-    background-color: #2d3748 !important;
-    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2) !important;
+    background-color: var(--card-bg) !important;
+    box-shadow: 0 0 0 3px rgba(212, 163, 115, 0.1) !important;
 }
 
 input,
 textarea {
-    background: rgba(255, 255, 255, 0.05) !important;
+    background: var(--card-bg) !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    border-radius: 12px !important;
+    border-radius: 16px !important;
     padding: 14px 18px !important;
     color: var(--text) !important;
     font-size: 1rem !important;
@@ -251,7 +357,7 @@ input:focus,
 textarea:focus {
     border-color: var(--primary) !important;
     background: rgba(255, 255, 255, 0.08) !important;
-    box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1) !important;
+    box-shadow: 0 0 0 4px rgba(212, 163, 115, 0.1) !important;
 }
 
 /* 录入表单右侧装饰卡片 */
@@ -262,8 +368,8 @@ textarea:focus {
 }
 
 .help-card {
-    background: rgba(139, 92, 246, 0.05);
-    border: 1px dashed rgba(139, 92, 246, 0.2);
+    background: rgba(212, 163, 115, 0.05);
+    border: 1px dashed rgba(212, 163, 115, 0.2);
     border-radius: 20px;
     padding: 30px;
     height: 100%;
@@ -365,7 +471,7 @@ textarea:focus {
 
 .stat-card {
     text-align: center;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
+    background: var(--mute-bg);
 }
 
 .stat-value {
@@ -393,7 +499,7 @@ textarea:focus {
 }
 
 .subject-card {
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--mute-bg);
     border-radius: 20px;
     padding: 24px;
     border: 1px solid rgba(255, 255, 255, 0.05);
@@ -407,7 +513,7 @@ textarea:focus {
 /* --- 进度条 --- */
 .progress-bar-bg {
     height: 8px;
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--progress-bg);
     border-radius: 10px;
     width: 140px;
     overflow: hidden;
@@ -434,7 +540,7 @@ textarea:focus {
 
 .primary-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
+    box-shadow: 0 8px 25px rgba(212, 163, 115, 0.2);
 }
 
 .secondary-btn {

@@ -11,7 +11,23 @@
 <body>
     <div id="app">
         <aside class="sidebar">
-            <div class="logo">考研抽检</div>
+            <div class="logo" id="sidebar-logo">
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M32,45 C32,32 40,25 50,25 C60,25 68,32 68,45 L68,70 C68,82 60,88 50,88 C40,88 32,82 32,70 Z"
+                        fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+                    <path d="M28,48 L32,25 L45,35 L55,25 L65,35 L72,25 L72,48" fill="none" stroke="currentColor"
+                        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M32,45 Q40,40 50,42 Q60,40 68,45" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" />
+                    <path d="M40,65 Q44,62 48,65" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" />
+                    <path d="M52,65 Q56,62 60,65" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" />
+                    <path d="M46,78 Q50,82 54,78" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" />
+                </svg>
+            </div>
             <nav>
                 <button class="nav-item active" id="btn-dashboard" data-short="仪"><span>仪表盘</span></button>
                 <button class="nav-item" id="btn-review" data-short="计"><span>按计划复习</span></button>
@@ -24,7 +40,7 @@
 
         <main class="content">
             <header class="top-bar">
-                <h1 id="page-title">仪表盘</h1>
+                <h1 id="page-title">Ebbinghaus Review</h1>
             </header>
 
             <section id="main-view" class="view-container">
@@ -32,6 +48,9 @@
             </section>
         </main>
     </div>
+
+    <button id="theme-toggle" title="切换主题">🌙</button>
+
     <script src="app.js"></script>
 </body>
 

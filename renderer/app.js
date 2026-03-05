@@ -16,15 +16,15 @@ const navButtons = {
 };
 
 const SUBJ_MAP = {
-    '数据结构': { emoji: '💻', color: '#8b5cf6' },
-    '计算机组成原理': { emoji: '🔌', color: '#ec4899' },
-    '操作系统': { emoji: '🖥️', color: '#3b82f6' },
-    '计算机网络': { emoji: '🌐', color: '#10b981' },
-    '高等数学': { emoji: '🔢', color: '#f59e0b' },
-    '线性代数': { emoji: '📐', color: '#6366f1' },
-    '英语': { emoji: '🔤', color: '#84cc16' },
-    '政治': { emoji: '🇨🇳', color: '#ef4444' },
-    '其他': { emoji: '📝', color: '#94a3b8' }
+    '数据结构': { emoji: '💻', color: 'var(--subj-cs)' },
+    '计算机组成原理': { emoji: '🔌', color: 'var(--subj-comp)' },
+    '操作系统': { emoji: '🖥️', color: 'var(--subj-os)' },
+    '计算机网络': { emoji: '🌐', color: 'var(--subj-net)' },
+    '高等数学': { emoji: '🔢', color: 'var(--subj-math)' },
+    '线性代数': { emoji: '📐', color: 'var(--subj-linear)' },
+    '英语': { emoji: '🔤', color: 'var(--subj-eng)' },
+    '政治': { emoji: '🇨🇳', color: 'var(--subj-pol)' },
+    '其他': { emoji: '📝', color: 'var(--subj-other)' }
 };
 
 // --- 视图与状态管理 ---
@@ -41,6 +41,24 @@ async function navigate(viewName, renderFn, ...args) {
 
 // --- 初始化与核心挂载 ---
 function init() {
+    // 主题初始化
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    if (savedTheme === 'light') {
+        document.body.classList.add('light-theme');
+        updateThemeUI('light');
+    }
+
+    // 主题切换逻辑
+    const themeBtn = document.getElementById('theme-toggle');
+    if (themeBtn) {
+        themeBtn.addEventListener('click', () => {
+            const isLight = document.body.classList.toggle('light-theme');
+            const theme = isLight ? 'light' : 'dark';
+            localStorage.setItem('theme', theme);
+            updateThemeUI(theme);
+        });
+    }
+
     // 侧边栏折叠逻辑
     const sidebar = document.querySelector('.sidebar');
     const logo = document.querySelector('.logo');
@@ -62,6 +80,15 @@ function init() {
     navigate('dashboard', renderDashboard);
 }
 
+function updateThemeUI(theme) {
+    const themeBtn = document.getElementById('theme-toggle');
+    if (theme === 'light') {
+        if (themeBtn) themeBtn.innerText = '🌞';
+    } else {
+        if (themeBtn) themeBtn.innerText = '🌙';
+    }
+}
+
 function setActiveNav(id) {
     const btns = {
         dashboard: document.getElementById('btn-dashboard'),
@@ -76,14 +103,8 @@ function setActiveNav(id) {
     const activeBtn = btns[id];
     if (activeBtn) activeBtn.classList.add('active');
 
-    // 处理页面标题显示
-    let title = "错题系统";
-    if (activeBtn) {
-        const span = activeBtn.querySelector('span');
-        title = span ? span.innerText : activeBtn.innerText;
-    }
-    const titleEl = document.getElementById('page-title');
-    if (titleEl) titleEl.innerText = title;
+    // 我们保持顶部的 "Ebbinghaus Review" 不变
+    // 如果需要显示当前页面名称，可以在 main-view 内部渲染
 }
 
 /**
@@ -121,14 +142,14 @@ async function renderDashboard() {
         return `
             <div class="subject-card animate-in">
                 <div class="subject-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                    <div class="subject-pill" style="background: ${subInfo.color}15; color: ${subInfo.color}; border: 1px solid ${subInfo.color}30">
+                    <div class="subject-pill" style="background: color-mix(in srgb, ${subInfo.color}, transparent 85%); color: ${subInfo.color}; border: 1px solid color-mix(in srgb, ${subInfo.color}, transparent 70%)">
                         <span>${subInfo.emoji} ${subjectName}</span>
                     </div>
-                    <span style="font-size:0.8rem; opacity:0.6;">今日: ${data[days - 1]}</span>
+                    <span class="text-muted" style="font-size:0.8rem;">今日: ${data[days - 1]}</span>
                 </div>
                 <div class="mini-chart">
                     <svg viewBox="0 0 ${width} ${height}">
-                        <path d="${areaPath}" fill="${subInfo.color}10" />
+                        <path d="${areaPath}" fill="color-mix(in srgb, ${subInfo.color}, transparent 90%)" />
                         <path d="${linePath}" fill="none" stroke="${subInfo.color}" stroke-width="3" />
                         ${points.map(p => `<circle cx="${p.x}" cy="${p.y}" r="3" fill="var(--text)" stroke="${subInfo.color}" stroke-width="2" />`).join('')}
                     </svg>
@@ -145,7 +166,7 @@ async function renderDashboard() {
                     <span style="font-size:2rem;">🕒</span>
                     <div>
                         <h3 style="color:var(--primary); margin:0;">检测到未完成的测试</h3>
-                        <p style="margin:5px 0 0 0; opacity:0.7; font-size:14px;">${activeSession.mode === 'instant' ? '立即抽查' : '计划复习'} · ${activeSession.subject === 'all' ? '全学科' : activeSession.subject}</p>
+                        <p class="text-muted" style="margin:5px 0 0 0; font-size:14px;">${activeSession.mode === 'instant' ? '立即抽查' : '计划复习'} · ${activeSession.subject === 'all' ? '全学科' : activeSession.subject}</p>
                     </div>
                 </div>
                 <div style="display:flex; align-items:center; gap:30px;">
@@ -160,11 +181,11 @@ async function renderDashboard() {
 
             <div class="stats-overview">
                 <div class="glass-card stat-card">
-                    <div style="font-size:14px; opacity:0.6; margin-bottom:10px;">🔥 待复习总量</div>
+                    <div class="text-muted" style="font-size:14px; margin-bottom:10px;">🔥 待复习总量</div>
                     <div class="stat-value highlight" style="color:var(--primary);">${totalPending}</div>
                 </div>
                 <div class="glass-card stat-card">
-                    <div style="font-size:14px; opacity:0.6; margin-bottom:10px;">📚 错题库规模</div>
+                    <div class="text-muted" style="font-size:14px; margin-bottom:10px;">📚 错题库规模</div>
                     <div class="stat-value">${totalQuestions}</div>
                 </div>
             </div>
