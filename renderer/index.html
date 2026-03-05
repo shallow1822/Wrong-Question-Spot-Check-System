@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>错题抽检系统</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div id="app">
+        <aside class="sidebar">
+            <div class="logo">考研抽检</div>
+            <nav>
+                <button class="nav-item active" id="btn-dashboard" data-short="仪"><span>仪表盘</span></button>
+                <button class="nav-item" id="btn-review" data-short="计"><span>按计划复习</span></button>
+                <button class="nav-item" id="btn-instant" data-short="抽"><span>立即抽查</span></button>
+                <button class="nav-item" id="btn-add" data-short="录"><span>录入错题</span></button>
+                <button class="nav-item" id="btn-library" data-short="库"><span>错题库</span></button>
+                <button class="nav-item" id="btn-pdf-manage" data-short="管"><span>PDF 管理</span></button>
+            </nav>
+        </aside>
+
+        <main class="content">
+            <header class="top-bar">
+                <h1 id="page-title">仪表盘</h1>
+            </header>
+
+            <section id="main-view" class="view-container">
+                <!-- 动态内容加载 -->
+            </section>
+        </main>
+    </div>
+    <script src="app.js"></script>
+</body>
+
+</html>
