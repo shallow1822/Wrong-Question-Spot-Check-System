@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "研究生错题库高效点检系统",
   "author": "Antigravity",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shallow1822/Wrong-Question-Spot-Check-System.git"
+  },
   "main": "main.js",
   "scripts": {
     "start": "electron .",
