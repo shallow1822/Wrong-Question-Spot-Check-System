@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*' # 当推送以 v 开头的标签时触发，例如 v2.0.1
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -44,6 +47,8 @@ jobs:
   release:
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Download Windows Artifacts
