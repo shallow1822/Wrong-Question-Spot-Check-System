@@ -40,7 +40,6 @@ jobs:
             dist/*.exe
             dist/*.dmg
             dist/*.zip
-            dist/*.blockmap
             dist/*.yml
           if-no-files-found: warn
 
