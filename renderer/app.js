@@ -15,6 +15,8 @@ const navButtons = {
     pdfManage: document.getElementById('btn-pdf-manage'),
 };
 
+const SUBJECTS = ['数据结构', '计算机组成原理', '操作系统', '计算机网络', '高等数学', '线性代数', '英语', '政治', '其他'];
+
 const SUBJ_MAP = {
     '数据结构': { emoji: '💻', color: 'var(--subj-cs)' },
     '计算机组成原理': { emoji: '🔌', color: 'var(--subj-comp)' },
@@ -118,7 +120,7 @@ async function renderDashboard() {
 
     const totalPending = stats.reduce((acc, s) => acc + s.pending, 0);
     const totalQuestions = stats.reduce((acc, s) => acc + s.total, 0);
-    const subjects = ['数据结构', '计算机组成原理', '操作系统', '计算机网络', '高等数学', '线性代数', '英语', '政治'];
+    const subjects = SUBJECTS;
 
     const renderSubjectChart = (subjectName) => {
         const subInfo = SUBJ_MAP[subjectName] || SUBJ_MAP['其他'];
@@ -221,7 +223,8 @@ function renderReviewConfig(mode) {
                 <label>选择学科范围</label>
                 <div class="select-wrapper">
                     <select id="select-subject">
-                        ${['数据结构', '计算机组成原理', '操作系统', '计算机网络', '高等数学', '线性代数', '英语', '政治'].map(s => `<option value="${s}">${s}</option>`).join('')}
+                        <option value="all">全学科</option>
+                        ${SUBJECTS.map(s => `<option value="${s}">${s}</option>`).join('')}
                     </select>
                 </div>
             </div>
@@ -296,11 +299,13 @@ function renderSplitSession(session, isPreview = false) {
                     </div>
                 </div>
 
-                <div class="pdf-view-panel">
-                    <div style="position:absolute; top:15px; left:20px; z-index:10; background:rgba(0,0,0,0.6); padding:8px 15px; border-radius:30px; backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,0.1); font-size:12px;">
+                <div class="pdf-view-panel" style="position: relative;">
+                    <div style="position:absolute; top:80px; left:20px; z-index:2000; background:rgba(0,0,0,0.75); padding:10px 20px; border-radius:35px; backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.2); font-size:12px; color:white; box-shadow: 0 8px 32px rgba(0,0,0,0.4);">
                         📖 ${q.pdf_name || '未关联 PDF'} ${q.page_number ? `· P${q.page_number}` : ''}
                     </div>
-                    ${q.pdf_path ? `<iframe src="file://${q.pdf_path}#page=${q.page_number || 1}&navpanes=0&pagemode=none"></iframe>` : `
+                    ${q.pdf_path ? `
+                    <webview id="pdf-webview" src="file://${q.pdf_path.replace(/\\/g, '/')}#page=${q.page_number || 1}&view=FitH&pagemode=none&navpanes=0" style="width:100%;height:100%;border:none;"></webview>
+                    ` : `
                     <div style="height:100%; display:flex; align-items:center; justify-content:center; opacity:0.4;">暂无 PDF 解析</div>`}
                 </div>
             </div>
@@ -318,6 +323,19 @@ function renderSplitSession(session, isPreview = false) {
 
         document.getElementById('btn-act-fail').addEventListener('click', () => recordResult('wrong'));
         document.getElementById('btn-act-success').addEventListener('click', () => recordResult('correct'));
+
+        // PDF webview：缩放控制
+        const webview = document.getElementById('pdf-webview');
+        if (webview) {
+            // 强制隐藏侧边栏的终极手段：监听加载完成并尝试注入 CSS (Chrome PDF Viewer 内部结构受限，主要靠 URL 参数)
+            webview.addEventListener('dom-ready', () => {
+                webview.insertCSS(`
+                    #sidebar { display: none !important; }
+                    #buttons { display: none !important; }
+                `);
+            });
+        }
+
     };
 
     const recordResult = async (result) => {
@@ -361,7 +379,7 @@ async function renderAddQuestionForm() {
                                 <label>所属学科</label>
                                 <div class="select-wrapper">
                                     <select id="q-subject">
-                                        ${['数据结构', '计算机组成原理', '操作系统', '计算机网络', '高等数学', '线性代数', '英语', '政治', '其他'].map(s => `<option value="${s}">${s}</option>`).join('')}
+                                        ${SUBJECTS.map(s => `<option value="${s}">${s}</option>`).join('')}
                                     </select>
                                 </div>
                             </div>
@@ -468,12 +486,13 @@ async function renderPdfManage() {
                             <span class="pdf-icon">📄</span>
                             <span class="pdf-name" title="${p.name}">${p.name}</span>
                         </div>
-                        <div class="pdf-info">
+                        <div class="pdf-info" style="margin-bottom: 15px;">
                             <div style="margin-bottom:5px;">路径: ${p.path}</div>
                             <div>添加时间: ${new Date(p.created_at).toLocaleDateString()}</div>
                         </div>
-                        <div style="margin-top:auto; display:flex; justify-content:flex-end;">
-                            <button class="danger-btn" data-id="${p.id}">彻底删除</button>
+                        <div style="margin-top:auto; display:flex; justify-content:space-between; gap: 10px;">
+                            <button class="secondary-btn btn-preview-pdf" data-path="${p.path.replace(/\\/g, '\\\\')}" data-name="${p.name}">预览 PDF</button>
+                            <button class="danger-btn btn-delete-pdf" data-id="${p.id}">彻底删除</button>
                         </div>
                     </div>
                 `).join('')}
@@ -482,7 +501,13 @@ async function renderPdfManage() {
         </div>
     `;
 
-    container.querySelectorAll('.danger-btn').forEach(btn => {
+    container.querySelectorAll('.btn-preview-pdf').forEach(btn => {
+        btn.addEventListener('click', () => {
+            renderPdfPreviewMode(btn.getAttribute('data-path'), btn.getAttribute('data-name'));
+        });
+    });
+
+    container.querySelectorAll('.btn-delete-pdf').forEach(btn => {
         btn.addEventListener('click', async () => {
             if (confirm('确认删除该 PDF？关联记录将失去 PDF 链接（题目本身不会被删除）。')) {
                 await window.electronAPI.deletePdf(btn.getAttribute('data-id'));
@@ -490,6 +515,36 @@ async function renderPdfManage() {
             }
         });
     });
+}
+
+function renderPdfPreviewMode(pdfPath, pdfName) {
+    const container = document.getElementById('main-view');
+    currentView = 'pdfPreview';
+
+    container.innerHTML = `
+        <div class="review-split-view animate-in">
+            <div class="pdf-view-panel" style="flex: 1; border-radius: 16px; overflow: hidden; position: relative;">
+                <div style="position:absolute; top:80px; left:20px; z-index:2000; background:rgba(0,0,0,0.85); padding:10px 20px; border-radius:35px; backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.25); font-size:12px; color:white; display:flex; align-items:center; gap:12px; box-shadow: 0 10px 40px rgba(0,0,0,0.6);">
+                    <button class="back-btn" id="btn-pdf-back" style="padding:6px 16px; font-size:12px; background:var(--primary); color:white; border:none; border-radius:20px; cursor:pointer;">← 返回</button>
+                    <span style="font-weight:600;">📖 ${pdfName}</span>
+                </div>
+                <webview id="preview-webview" src="file://${pdfPath.replace(/\\/g, '/')}#view=FitH&pagemode=none&navpanes=0" style="width:100%;height:100%;border:none;"></webview>
+            </div>
+        </div>
+    `;
+
+    const webview = document.getElementById('preview-webview');
+    webview.addEventListener('dom-ready', () => {
+        webview.insertCSS(`
+            #sidebar { display: none !important; }
+            #buttons { display: none !important; }
+        `);
+    });
+
+    document.getElementById('btn-pdf-back').addEventListener('click', () => {
+        navigate('pdfManage', renderPdfManage);
+    });
+
 }
 
 /**
@@ -517,55 +572,91 @@ async function refreshPDFList(selectedId = null) {
  */
 async function renderLibrary() {
     const container = document.getElementById('main-view');
-    const questions = await window.electronAPI.getAllQuestions();
+    const allQuestions = await window.electronAPI.getAllQuestions();
+
+    const renderList = (questions) => {
+        const listContainer = container.querySelector('.question-list');
+        listContainer.innerHTML = questions.map(q => {
+            const subInfo = SUBJ_MAP[q.subject] || SUBJ_MAP['其他'];
+            return `
+                <div class="library-item glass-card animate-in">
+                    <div class="item-info">
+                        <div class="item-top">
+                            <span class="q-tag" style="background:${subInfo.color}15; color:${subInfo.color}; border:1px solid ${subInfo.color}30;">${subInfo.emoji} ${q.subject}</span>
+                            <span style="font-size:12px; opacity:0.5;">${new Date(q.created_at).toLocaleDateString()}</span>
+                        </div>
+                        <div class="item-content">${q.content}</div>
+                        ${q.pdf_name ? `<div style="font-size:12px; color:var(--primary);">📎 ${q.pdf_name} (P${q.page_number || '?'})</div>` : ''}
+                    </div>
+                    <div class="item-actions">
+                        <button class="secondary-btn btn-preview" data-id="${q.id}">预览/测试</button>
+                        <button class="danger-btn btn-delete" data-id="${q.id}">移除</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        // Re-bind events
+        listContainer.querySelectorAll('.btn-preview').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const q = allQuestions.find(item => item.id == btn.getAttribute('data-id'));
+                renderSplitSession({ id: 'preview', mode: 'preview', subject: q.subject, questions: [q], current_index: 0 }, true);
+            });
+        });
+
+        listContainer.querySelectorAll('.btn-delete').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                if (confirm('确认删除？')) {
+                    await window.electronAPI.deleteQuestion(btn.getAttribute('data-id'));
+                    renderLibrary();
+                }
+            });
+        });
+    };
 
     container.innerHTML = `
         <div class="library-container animate-in">
             <div class="view-header">
-                <h2>📚 错题全库 <span style="font-size:16px; opacity:0.6;">(${questions.length})</span></h2>
-                <button class="primary-btn" id="btn-lib-add">+ 录入</button>
+                <h2>📚 错题全库 <span id="lib-count" style="font-size:16px; opacity:0.6;">(${allQuestions.length})</span></h2>
+                <div style="display:flex; gap:15px; align-items:center;">
+                    <div class="select-wrapper" style="width:150px; margin:0;">
+                         <select id="filter-subject">
+                            <option value="all">所有学科</option>
+                            ${SUBJECTS.map(s => `<option value="${s}">${s}</option>`).join('')}
+                        </select>
+                    </div>
+                    <input type="text" id="lib-search" placeholder="搜索题目内容..." style="width:250px; padding:8px 15px !important; border-radius:10px !important;">
+                    <button class="primary-btn" id="btn-lib-add" style="padding:10px 20px;">+ 录入</button>
+                </div>
             </div>
             <div class="question-list">
-                ${questions.map(q => {
-        const subInfo = SUBJ_MAP[q.subject] || SUBJ_MAP['其他'];
-        return `
-                        <div class="library-item glass-card animate-in">
-                            <div class="item-info">
-                                <div class="item-top">
-                                    <span class="q-tag" style="background:${subInfo.color}15; color:${subInfo.color}; border:1px solid ${subInfo.color}30;">${subInfo.emoji} ${q.subject}</span>
-                                    <span style="font-size:12px; opacity:0.5;">${new Date(q.created_at).toLocaleDateString()}</span>
-                                </div>
-                                <div class="item-content">${q.content}</div>
-                                ${q.pdf_name ? `<div style="font-size:12px; color:var(--primary);">📎 ${q.pdf_name} (P${q.page_number || '?'})</div>` : ''}
-                            </div>
-                            <div class="item-actions">
-                                <button class="secondary-btn btn-preview" data-id="${q.id}">预览/测试</button>
-                                <button class="danger-btn btn-delete" data-id="${q.id}">移除</button>
-                            </div>
-                        </div>
-                    `;
-    }).join('')}
+                <!-- List will be rendered here -->
             </div>
         </div>
     `;
 
+    const filterSubject = document.getElementById('filter-subject');
+    const searchInput = document.getElementById('lib-search');
+
+    const updateFilter = () => {
+        const sub = filterSubject.value;
+        const search = searchInput.value.toLowerCase();
+        
+        const filtered = allQuestions.filter(q => {
+            const matchSub = sub === 'all' || q.subject === sub;
+            const matchSearch = !search || q.content.toLowerCase().includes(search);
+            return matchSub && matchSearch;
+        });
+
+        document.getElementById('lib-count').innerText = `(${filtered.length})`;
+        renderList(filtered);
+    };
+
+    filterSubject.addEventListener('change', updateFilter);
+    searchInput.addEventListener('input', updateFilter);
     document.getElementById('btn-lib-add')?.addEventListener('click', () => navigate('add', renderAddQuestionForm));
 
-    container.querySelectorAll('.btn-preview').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const q = questions.find(item => item.id == btn.getAttribute('data-id'));
-            renderSplitSession({ id: 'preview', mode: 'preview', subject: q.subject, questions: [q], current_index: 0 }, true);
-        });
-    });
-
-    container.querySelectorAll('.btn-delete').forEach(btn => {
-        btn.addEventListener('click', async () => {
-            if (confirm('确认删除？')) {
-                await window.electronAPI.deleteQuestion(btn.getAttribute('data-id'));
-                renderLibrary();
-            }
-        });
-    });
+    updateFilter();
 }
 
 // 启动入口

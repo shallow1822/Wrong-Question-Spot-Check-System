@@ -1,5 +1,6 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
+const fs = require('fs');
 const { initDb, db } = require('./database');
 
 function createWindow() {
@@ -11,7 +12,9 @@ function createWindow() {
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
-      contextIsolation: true
+      contextIsolation: true,
+      webSecurity: false, // 禁用跨域限制，允许前端 fetch 加载本地 PDF 文件
+      webviewTag: true  // 启用 <webview> 标签，支持 PDF 缩放和跳页
     }
   });
 
@@ -23,12 +26,21 @@ app.whenReady().then(() => {
   createWindow();
 
   // IPC Handlers
+  ipcMain.handle('read-file', async (event, filePath) => {
+    return fs.promises.readFile(filePath);
+  });
+
+  // 终极杀招：直接传递 base64 字符串，规避了 Buffer 序列化丢失问题和跨域阻拦
+  ipcMain.handle('read-pdf-base64', async (event, filePath) => {
+    return fs.promises.readFile(filePath, { encoding: 'base64' });
+  });
+
   ipcMain.handle('get-stats', async () => {
     const stats = db.prepare(`
         SELECT 
             subject, 
             COUNT(*) as total,
-            SUM(CASE WHEN next_review_date <= date('now') THEN 1 ELSE 0 END) as pending
+            SUM(CASE WHEN next_review_date IS NOT NULL AND next_review_date <= date('now') THEN 1 ELSE 0 END) as pending
         FROM questions 
         GROUP BY subject
     `).all();
@@ -52,14 +64,12 @@ app.whenReady().then(() => {
 
   ipcMain.handle('save-question', async (event, question) => {
     const { subject, content, imagePath, pdfId, pageNumber } = question;
-    const nextReview = new Date();
-    nextReview.setDate(nextReview.getDate() + 1); // Default first review in 1 day
-
+    // 入库时不设复习日期，首次测验后才写入
     const stmt = db.prepare(`
         INSERT INTO questions (subject, content, image_path, pdf_id, page_number, next_review_date)
-        VALUES (?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, NULL)
     `);
-    const result = stmt.run(subject, content, imagePath, pdfId, pageNumber, nextReview.toISOString().split('T')[0]);
+    const result = stmt.run(subject, content, imagePath, pdfId, pageNumber);
     return result.lastInsertRowid;
   });
 
@@ -78,11 +88,21 @@ app.whenReady().then(() => {
       return null;
     }
 
-    const filePath = result.filePaths[0];
-    const fileName = (data && data.name) || path.basename(filePath);
+    const sourcePath = result.filePaths[0];
+    const fileName = (data && data.name) || path.basename(sourcePath);
+
+    // 将 PDF 实体文件拷贝至系统专用的 userData/pdfs 目录中，防止原文件被删后无法打开（即变相“存入数据库/软件后台”）
+    const userDataPath = app.getPath('userData');
+    const pdfsDir = path.join(userDataPath, 'pdfs');
+    if (!fs.existsSync(pdfsDir)) {
+      fs.mkdirSync(pdfsDir, { recursive: true });
+    }
+    const internalFileName = Date.now() + '_' + path.basename(sourcePath);
+    const destPath = path.join(pdfsDir, internalFileName);
+    fs.copyFileSync(sourcePath, destPath);
 
     const stmt = db.prepare(`INSERT INTO pdf_files (name, path) VALUES (?, ?)`);
-    const dbResult = stmt.run(fileName, filePath);
+    const dbResult = stmt.run(fileName, destPath);
     return dbResult.lastInsertRowid;
   });
 
@@ -126,7 +146,7 @@ app.whenReady().then(() => {
         SELECT q.*, p.name as pdf_name, p.path as pdf_path
         FROM questions q
         LEFT JOIN pdf_files p ON q.pdf_id = p.id
-        WHERE (next_review_date <= date('now') OR next_review_date IS NULL)
+        WHERE next_review_date IS NOT NULL AND next_review_date <= date('now')
     `;
     const params = [];
     if (subject && subject !== 'all') {

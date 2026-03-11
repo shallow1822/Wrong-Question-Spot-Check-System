@@ -1,6 +1,6 @@
 {
   "name": "study-spot-check",
-  "version": "1.0.1",
+  "version": "2.0.1",
   "description": "研究生错题库高效点检系统",
   "author": "Antigravity",
   "repository": {
@@ -70,10 +70,12 @@
     ]
   },
   "dependencies": {
-    "better-sqlite3": "^11.0.0"
+    "better-sqlite3": "^11.0.0",
+    "pdfkit": "^0.17.2"
   },
   "devDependencies": {
     "electron": "^30.0.0",
-    "electron-builder": "^24.13.3"
+    "electron-builder": "^24.13.3",
+    "pdfjs-dist": "^5.5.207"
   }
 }
