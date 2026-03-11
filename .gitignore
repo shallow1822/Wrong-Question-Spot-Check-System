@@ -1,2 +1,47 @@
-﻿node_modules
+# Dependencies
+node_modules/
+
+# Build outputs
 dist/
+release/
+out/
+build/
+*.exe
+*.dmg
+*.AppImage
+*.deb
+*.rpm
+*.zip
+
+# Database & Storage
+*.db
+*.sqlite
+*.sqlite3
+*.shm
+*.wal
+*.sql
+
+# Logs and Debugging
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+debug.log
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+
+# Project Specific Demos/Tests
+test.pdf
+test.mjs
+temp/
+downloads/

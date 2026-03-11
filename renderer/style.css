@@ -28,6 +28,11 @@
     --subj-eng: #d4a373;
     --subj-pol: #ff6b6b;
     --subj-other: #8e8e93;
+
+    /* 复习/预览界面背景（夜间） */
+    --review-bg: #020617;
+    --review-panel-bg: rgba(15, 23, 42, 0.9);
+    --review-pdf-bg: #1e293b;
 }
 
 body.light-theme {
@@ -52,6 +57,11 @@ body.light-theme {
     --subj-eng: #8b5e34;
     --subj-pol: #dc2626;
     --subj-other: #4b5563;
+
+    /* 复习/预览界面背景（日间） */
+    --review-bg: #eef0f4;
+    --review-panel-bg: rgba(248, 248, 245, 0.97);
+    --review-pdf-bg: #dfe3ea;
 }
 
 * {
@@ -119,6 +129,7 @@ body {
     font-weight: 900;
     background: linear-gradient(to right, var(--primary), var(--secondary));
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     margin-bottom: 50px;
     text-align: center;
@@ -203,6 +214,8 @@ nav {
     justify-content: center;
     /* 居中标题 */
     position: relative;
+    /* macOS：使标题栏区域可拖动窗口 */
+    -webkit-app-region: drag;
 }
 
 .top-bar h1 {
@@ -210,6 +223,7 @@ nav {
     font-weight: 900;
     background: linear-gradient(135deg, var(--primary), var(--secondary));
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     filter: drop-shadow(0 5px 15px rgba(212, 163, 115, 0.1));
     letter-spacing: -1px;
@@ -233,6 +247,8 @@ nav {
     box-shadow: var(--shadow);
     transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     z-index: 1000;
+    /* macOS：按钮不参与窗口拖动 */
+    -webkit-app-region: no-drag;
 }
 
 #theme-toggle:hover {
@@ -391,13 +407,13 @@ textarea:focus {
     height: calc(100vh - 80px);
     margin: -60px;
     /* 匹配 .view-container 的最新 padding */
-    background: #020617;
+    background: var(--review-bg);
 }
 
 .review-content-panel {
     flex: 3.5;
     padding: 40px 50px;
-    background: rgba(15, 23, 42, 0.9);
+    background: var(--review-panel-bg);
     backdrop-filter: blur(30px);
     display: flex;
     flex-direction: column;
@@ -407,16 +423,141 @@ textarea:focus {
 
 .pdf-view-panel {
     flex: 6.5;
-    background: #1e293b;
+    background: var(--review-pdf-bg);
     position: relative;
     box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
 }
 
-.pdf-view-panel iframe {
+.pdf-view-panel iframe,
+.pdf-view-panel webview {
     width: 100%;
     height: 100%;
     border: none;
     z-index: 1;
+    display: flex;
+}
+
+/* --- 原有 PDF 缩放控制（webview 版）已废弃 --- */
+.pdf-zoom-controls {
+    display: none;
+}
+
+/* --- PDF.js 渲染器专用样式 --- */
+.pdfv-toolbar {
+    position: absolute;
+    bottom: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 8px 15px;
+    border-radius: 30px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 13px;
+}
+
+.pdfv-btn {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 15px;
+    cursor: pointer;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    min-height: 24px;
+    border-radius: 5px;
+    transition: background 0.2s;
+}
+
+.pdfv-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.pdfv-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.pdfv-page-info {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+#pdfv-page-input {
+    width: 40px;
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+    text-align: center;
+    border-radius: 4px !important;
+    padding: 2px 4px !important;
+    font-size: 13px !important;
+    outline: none;
+}
+
+#pdfv-page-input::-webkit-outer-spin-button,
+#pdfv-page-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.pdfv-sep {
+    width: 1px;
+    height: 16px;
+    background: rgba(255, 255, 255, 0.3);
+    margin: 0 5px;
+}
+
+.pdfv-zoom-label {
+    min-width: 40px;
+    text-align: center;
+}
+
+.pdfv-fit-btn {
+    font-size: 18px;
+    padding-bottom: 2px;
+}
+
+.pdfv-canvas-wrap {
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 20px 0;
+}
+
+#pdfv-canvas {
+    max-width: none;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    background: white;
+    /* PDF 纸张颜色 */
+}
+
+.pdfv-loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--review-pdf-bg);
+    color: var(--text);
+    font-size: 1.2rem;
+    font-weight: bold;
+    z-index: 5;
 }
 
 /* PDF 阅读器主题装饰 */
